@@ -1,0 +1,22 @@
+<script src="https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+$(document).ready(function () {
+    $('code.language-mermaid').each(function() {
+        var $codeElement = $(this);
+        var $pElement = $('<p>', { html: $codeElement.html() });
+
+        // Copy over all attributes from the code element to the p element
+        $.each(this.attributes, function() {
+            $pElement.attr(this.name, this.value);
+        });
+
+        // Replace the parent <pre> element with the new <p> element
+        $codeElement.parent('pre').replaceWith($pElement);
+    });
+    mermaid.initialize({
+        startOnLoad:true,
+        theme: "default",
+    });
+    window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
