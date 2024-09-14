@@ -23,7 +23,7 @@ print_hi('Tom')
 #=> prints 'Hi, Tom' to STDOUT.
 {% endhighlight %}
 
-Salsicce impanate
+Mermaid Integration Test
 ```mermaid
 graph TD;
     A-->B;
