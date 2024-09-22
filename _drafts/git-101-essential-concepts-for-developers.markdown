@@ -3,7 +3,9 @@ alayout: post
 title:  "GIT 101: Essential Concepts for Developers"
 categories: git guide vcs
 mermaid: true
+
 ---
+
 Git e' il piu diffuso distributed Version Control System (VCS) in uso al mondo. Il suo scopo e' di aiutare a mantenere e gestire un insieme di file che cambia nel tempo registrando tutte le modifiche effettuati ad esso e aiutando a gestire la progressione concorrente di molteplici persone sullo stesso insieme di file.
 
 Nonostante sia principalmente utilizzato in programmazione per la gestione di source code, puo venir utilizzato per la gestione di qualunque file di testo che cambia nel tempo (purtroppo e' inutile per file come Word o Excel che non sono in formato "raw text").
@@ -165,7 +167,7 @@ Il Git Log grezzo non e' il modo piu semplice per capire cosa sta succedendo, in
 | |
 ```
 
-Rimane comunque molto clutterato da informazioni non necessarie nel 90% dei casi, quindi ho costruito un comando che mostra un albero semplice e immediato:
+Rimane comunque molto clutterato da informazioni non necessarie nel 90% dei casi, quindi ecco un comando che mostra un albero semplice e immediato da comprendere:
 
 ```bash
 git log --graph --full-history --all --color --pretty=format:"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s"
@@ -203,7 +205,7 @@ Viene inserito nel proprio `~/.gitconfig` file la configurazione che consente di
 Questo comando permette di vedere il contenuto di un commit, ovvero tutti i suoi metadata e infine il `diff` ovvero la lista di aggiunte e rimozioni che il commit contiene. Il nome viene dall'utility utilizzata per generare questi file ed il relativo formato, ovvero `diff`!
 
 ```
-roberto@production-api-charge-re:~/backend_rossinienergy$ git show  f99a3da
+roberto@production-api-charge-re:~/backend_rossinienergy$ git show f99a3da
 commit f99a3dad16fc7ae81a0d814c6566b9e4687dc84a (origin/chargemap_integr)
 Author: Federico Pasqua (eisterman) <federico.pasqua.96@gmail.com>
 Date:   Mon Jul 1 14:04:00 2024 +0200
@@ -443,9 +445,9 @@ Il merge funziona secondo una logica preimpostata, che puo anche venir cambiata 
 
 5. Se ci sono dei conflitti, come ad esempio porzioni di file modificati da entrambe le branch, si attiva la modalita **merge conflict** che richiede all'operatore di risolverli a mano.
 
---- immagine di fast-forwarding
+--- immagini di merge e fast-forwarding
 
-Ecco un esempio nel caso in cui non ci siano conflitti:
+Ecco un esempio nel caso in cui non ci siano conflitti ma non si possa eseguire fast-forwarding:
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
@@ -469,3 +471,380 @@ fpasqua@EisterBox:~/git/test$ git tree
 ```
 
 Come si puo notare, la branch `feature1` non viene minimamente toccata.
+
+Se invece il Fast Forward e' possibile come nel caso di `feature2` e `master`, se non diversamente specificato nelle opzioni del merge nessun merge commit viene creato, ma la branch target viene fast-forwardata in avanti:
+
+```
+fpasqua@EisterBox:~/git/test$ git tree
+* baca0a1        (feature2) Aggiungo C.py per feature 2
+*   13b099b      (HEAD -> master) Merge branch 'feature1'
+|\
+| * 86b5f83      (feature1) Modifico B.py per feature 1
+* | 4c0a83f      Aggiungi Nuovo File!
+|/
+* 31ebe42        Modifico A.py aggiugendo feature X
+* bd883a1        Initial Commit
+fpasqua@EisterBox:~/git/test$ git merge feature2
+Updating 13b099b..baca0a1
+Fast-forward
+ C.py | 2 ++
+ 1 file changed, 2 insertions(+)
+ create mode 100644 C.py
+fpasqua@EisterBox:~/git/test$ git tree
+* baca0a1        (HEAD -> master, feature2) Aggiungo C.py per feature 2
+*   13b099b      Merge branch 'feature1'
+|\
+| * 86b5f83      (feature1) Modifico B.py per feature 1
+* | 4c0a83f      Aggiungi Nuovo File!
+|/
+* 31ebe42        Modifico A.py aggiugendo feature X
+* bd883a1        Initial Commit
+```
+
+Questo comando e' estremamente potente e generalmente e' la base dei git flow piu semplici in uso.
+
+Merge e' un comando estremamente vasto con decine di opzioni.
+
+##### Git Merge Conflict
+
+Se durante un merge di due branch divergenti, su cui non e' possibile agire via fast-forward, dei file sono stati modificati in entrambe le branch git non puo decidere autonomamente quale sia la versione corretta del file. Magari l'utente deve unire insieme alcune modifiche della branch 1 e della branch 2. In questo caso il merge viene bloccato e la repository viene posta in stato di **Merge Conflict**, estremamente temuta dai principianti.
+
+Se lo stesso file e' modificato in parti diverse dalle due branch la strategia di default di Git e' in grado comunque di fare il merge, ma nel caso venga rilevata una modifica da parte di entrambe le branch ad una stessa porzione di un file, viene triggerato il conflitto.
+
+Creiamo ora un esempio dedicato. Immaginiamo di avere questo file chiamato `D.py` nella nostra branch:
+
+```python
+print("Numbers:")
+for i in range(10):
+    print(i)
+print("Fibo:")
+a = 1
+b = 1
+for x in range(5):
+    a,b = b,a+b
+    print(b)
+
+```
+
+Immaginiamo che in due branch diverse vengono fatte modifiche a righe diverse di questo stesso file.
+
+Avremo questo tree:
+
+```
+fpasqua@EisterBox:~/git/test$ git tree
+* bd642ef        (HEAD -> master) D.py: Print numbers on a line
+| * 8d31cf8      (d_modify) D.py: Fix Fibo sequence
+|/
+* f6f37ea        First D.py version
+[...]
+```
+
+Dove possiamo notare due branch `master` e `d_modify` con due commit. Questi commit agiscono su porzioni diverse dello stesso file come possiamo vedere facendo `git show` dei commit in cima alle branch.
+
+Ricorda che in questo caso fare `git show <branch>` e' equivalente a fare `git show <commit_hash>` con il commit a cui l'etichetta branch punta.
+
+```diff
+fpasqua@EisterBox:~/git/test$ git show master
+commit bd642ef1b280cb7d5fedb1a6527345fea6df3424 (HEAD -> master)
+Author: Federico Pasqua (eisterman) <federico.pasqua.96@gmail.com>
+Date:   Sun Sep 22 15:51:21 2024 +0200
+
+    D.py: Print numbers on a line
+
+diff --git a/D.py b/D.py
+index 8868120..581d593 100644
+--- a/D.py
++++ b/D.py
+@@ -1,6 +1,7 @@
+ print("Numbers:")
+ for i in range(10):
+-    print(i)
++    print(i, end=', ')
++print()
+ print("Fibo:")
+ a = 1
+ b = 1
+```
+
+-
+
+```diff
+fpasqua@EisterBox:~/git/test$ git show d_modify
+commit 8d31cf803278978093f8612c1b73490497338e33 (d_modify)
+Author: Federico Pasqua (eisterman) <federico.pasqua.96@gmail.com>
+Date:   Sun Sep 22 15:50:16 2024 +0200
+
+    D.py: Fix Fibo sequence
+
+diff --git a/D.py b/D.py
+index 8868120..75d2edb 100644
+--- a/D.py
++++ b/D.py
+@@ -1,10 +1,12 @@
+ print("Numbers:")
+-for i in range(10):
+-    print(i)
++for j in range(10):
++    print(j)
+ print("Fibo:")
+-a = 1
++a = 0
+ b = 1
++print(1, end=', ')
+ for x in range(5):
+     a,b = b,a+b
+-    print(b)
++    print(b, end=', ')
++print()
+
+
+```
+
+Come possiamo notare entrambi modificano nelle prime righe le stesse porzioni del file `D.py`. Cosa succede quindi se proviamo a fare il merge di d_modify in master?
+
+```
+fpasqua@EisterBox:~/git/test$ git merge d_modify
+Auto-merging D.py
+CONFLICT (content): Merge conflict in D.py
+Automatic merge failed; fix conflicts and then commit the result.
+fpasqua@EisterBox:~/git/test$ git status
+On branch master
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+        both modified:   D.py
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+Come possiamo notare la repository e' ora in stato di merge conflict.
+
+Il `git status` ci mostra che c'e un path/file che va risolto manualmente, ovvero D.py.
+
+Aprendo D.py vedremo questo:
+
+```python
+print("Numbers:")
+<<<<<<< HEAD
+for i in range(10):
+    print(i, end=', ')
+print()
+=======
+for j in range(10):
+    print(j)
+>>>>>>> d_modify
+print("Fibo:")
+a = 0
+b = 1
+print(1, end=', ')
+for x in range(5):
+    a,b = b,a+b
+    print(b, end=', ')
+print()
+```
+
+Le modifiche che potevano essere auto-mergiate sono state fuse, ma quelle in conflitto no.
+
+Per poter risolvere il conflitto bisogna sostituire la parte racchiusa tra le righe con `<<<<<<` e `>>>>>>>` con il codice che vogliamo sia presente alla fine del merge.
+
+Si puo notare come ci vengano date le versioni del codice nelle 2 branch partecipanti al merge, dove con HEAD ci si riferisce alla branch al momento in checkout, quindi abbiamo nella prima parte il codice che proviene da `master` e nella seconda quello da `d_modify`.
+
+Questa operazione va fatta manualmente in base a cosa gli sviluppatori si aspettano, e in questo caso quello che io volevo era:
+
+```python
+print("Numbers:")
+for j in range(10):
+    print(j, end=', ')
+print()
+print("Fibo:")
+a = 0
+b = 1
+print(1, end=', ')
+for x in range(5):
+    a,b = b,a+b
+    print(b, en
+```
+
+e scriverlo all'interno del file.
+
+Ora che il conflitto e' stato risolto bisogna markarlo come tale e continuare il processo di merge:
+
+```
+fpasqua@EisterBox:~/git/test$ git add D.py
+fpasqua@EisterBox:~/git/test$ git status
+On branch master
+All conflicts fixed but you are still merging.
+  (use "git commit" to conclude merge)
+
+Changes to be committed:
+        modified:   D.py
+
+fpasqua@EisterBox:~/git/test$ git commit
+[master 4c13b7a] Merge branch 'd_modify'
+fpasqua@EisterBox:~/git/test$ git tree
+*   4c13b7a      (HEAD -> master) Merge branch 'd_modify'
+|\
+| * 8d31cf8      (d_modify) D.py: Fix Fibo sequence
+* | bd642ef      D.py: Print numbers on a line
+|/
+* f6f37ea        First D.py version
+[...]
+```
+
+Ed ecco risolto il merge conflict.
+
+##### `git reset`
+
+A volte puo capitare che convenga cambiare lo stato di una branch all'indietro per risolvere un problema. Git Reset consente di resettare lo stato della branch attualmente selezionata (HEAD) ad uno stato precedente.
+
+Esistono 4 tipi di Reset:
+
+1. **--soft** :
+   
+   - Moves the HEAD to a specified commit.
+   - Keeps changes in the working directory and index (staging area).
+   - Use case: Undo commit(s), but keep changes staged.
+
+2. **--mixed** (default if no mode is specified):
+   
+   - Moves the HEAD to a specified commit.
+   - Keeps changes in the working directory.
+   - Unstages changes by resetting the index.
+   - Use case: Undo commit(s) and unstage changes for re-committing.
+
+3. **--hard** :
+   
+   - Moves the HEAD to a specified commit.
+   - Resets both the index and working directory to the specified commit.
+   - Discards all local changes.
+   - Use case: Completely revert changes to a previous state.
+
+4. **--merge** :
+   
+   - Moves the HEAD to a specified commit.
+   - Keeps changes in the working directory that can be merged.
+   - Resets the index but preserves uncommitted changes to be merged.
+   - Use case: Safely update the current branch with a new base commit while keeping relevant changes.
+
+5. **--keep** :
+   
+   - Moves the HEAD to a specified commit.
+   - Keeps changes in the working directory if they do not conflict with the reset.
+   - Use case: Update the HEAD while retaining work in progress that does not conflict.
+
+Ogni reset mode ha uno specifico use case. Personalmente mi e' raramente capitato di dover usare reset diversi da `reset --hard` ma questo e' probabilmente skill-issue da parte mia nel non essermi mai focalizzato troppo sul capire quando usare ogni tipo di git reset.
+
+Ad esempio, immaginiamo di voler resettare lo stato della nostra repository a prima del merge.
+
+```
+fpasqua@EisterBox:~/git/test$ git tree
+*   4c13b7a      (HEAD -> master) Merge branch 'd_modify'
+|\
+| * 8d31cf8      (d_modify) D.py: Fix Fibo sequence
+* | bd642ef      D.py: Print numbers on a line
+|/
+* f6f37ea        First D.py version
+* baca0a1        Aggiungo C.py per feature 2
+[...]
+fpasqua@EisterBox:~/git/test$ git reset --hard bd642ef
+HEAD is now at bd642ef D.py: Print numbers on a line
+fpasqua@EisterBox:~/git/test$ git tree
+* 8d31cf8        (d_modify) D.py: Fix Fibo sequence
+| * bd642ef      (HEAD -> master) D.py: Print numbers on a line
+|/
+* f6f37ea        First D.py version
+* baca0a1        Aggiungo C.py per feature 2
+[...]
+```
+
+In questo modo abbiamo rollbackato il merge, rimuovendone il commit.
+
+##### Recovering from a git reset
+
+Reset e' un operazione estremamente distruttiva se fatta nel modo sbagliato, nonostante questo esiste un modo per recuperare i commit perduti da un reset.
+
+Se ci si ricorda il commit hash di prima del reset, o tramite il comando che lista in maniera indiscriminata tutti i movimenti dei commit nella repo, anche quelli orfani (`git reflog`), e' possibile recuperare lo stato precedente grazie ad un altro reset:
+
+```
+fpasqua@EisterBox:~/git/test$ git reflog
+bd642ef (HEAD -> master) HEAD@{0}: reset: moving to bd642ef
+4c13b7a HEAD@{1}: reset: moving to 4c13b7a
+f6f37ea HEAD@{2}: reset: moving to f6f37ea
+4c13b7a HEAD@{3}: commit (merge): Merge branch 'd_modify'
+bd642ef (HEAD -> master) HEAD@{4}: checkout: moving from d_modify to master
+8d31cf8 (d_modify) HEAD@{5}: commit (amend): D.py: Fix Fibo sequence
+1d8bf5c HEAD@{6}: checkout: moving from master to d_modify
+bd642ef (HEAD -> master) HEAD@{7}: reset: moving to bd642ef
+a32e387 HEAD@{8}: merge d_modify: Merge made by the 'ort' strategy.
+bd642ef (HEAD -> master) HEAD@{9}: commit: D.py: Print numbers on a line
+```
+
+Possiamo vedere che l'ultimo commit cu cui e' stata registrata un operazione prima di quello di reset era il `4c13b7a`, quindi possiamo ispezionare questo commit orfano per vedere se e' quello a cui vogliamo ritornare
+
+```diff
+fpasqua@EisterBox:~/git/test$ git show 4c13b7a
+commit 4c13b7a02077adb301a23c359418413bd046c129
+Merge: bd642ef 8d31cf8
+Author: Federico Pasqua (eisterman) <federico.pasqua.96@gmail.com>
+Date:   Sun Sep 22 16:06:36 2024 +0200
+
+    Merge branch 'd_modify'
+
+diff --cc D.py
+index 581d593,75d2edb..ea40bd3
+--- a/D.py
++++ b/D.py
+@@@ -1,11 -1,12 +1,13 @@@
+  print("Numbers:")
+- for i in range(10):
+-     print(i, end=', ')
++ for j in range(10):
+ -    print(j)
+++    print(j, end=', ')
+ +print()
+  print("Fibo:")
+- a = 1
++ a = 0
+  b = 1
++ print(1, end=', ')
+  for x in range(5):
+      a,b = b,a+b
+-     print(b)
++     print(b, end=', ')
++ print()
+```
+
+E sembrerebbe proprio il commit da cui siamo partiti col reset! Facendo quindi:
+
+```
+fpasqua@EisterBox:~/git/test$ git reset --hard 4c13b7a
+HEAD is now at 4c13b7a Merge branch 'd_modify'
+fpasqua@EisterBox:~/git/test$ git tree
+*   4c13b7a      (HEAD -> master) Merge branch 'd_modify'
+|\
+| * 8d31cf8      (d_modify) D.py: Fix Fibo sequence
+* | bd642ef      D.py: Print numbers on a line
+|/
+* f6f37ea        First D.py version
+* baca0a1        Aggiungo C.py per feature 2
+*   13b099b      Merge branch 'feature1'
+|\
+| * 86b5f83      Modifico B.py per feature 1
+* | 4c0a83f      Aggiungi Nuovo File!
+|/
+* 31ebe42        Modifico A.py aggiugendo feature X
+* bd883a1        Initial Commit
+```
+
+Abbiamo effettivamente recuperato i commit persi con il reset.
+
+Questa operazione si affida al fatto che Git cancella internamente i commit orfani non immediatamente ma una volta ogni tanto (garbage collection), quindi per un po' di tempo si puo' recuperare il danno fatto da un reset sbagliato.
+
+Questo e' possibile solo con i dati dei commit e non con dati in staging area o in working directory persi da un reset.
+
+##### `git rebase`
+
+Il Rebase e' al contempo un operazione semplice ma estremamente potente, il cui use case e' effettivamente "riscrivere la storia", ovvero modificare/ricreare un intera catena di commit cambiandone certi pezzi come unire insieme piu commit.
