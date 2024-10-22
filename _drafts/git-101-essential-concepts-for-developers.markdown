@@ -1,87 +1,109 @@
 ---
+
 alayout: post
-title:  "GIT 101: Essential Concepts for Developers"
+title: "GIT 101: Essential Concepts for Developers"
 categories: git guide vcs
 mermaid: true
 
 ---
 
-Git e' il piu diffuso distributed Version Control System (VCS) in uso al mondo. Il suo scopo e' di aiutare a mantenere e gestire un insieme di file che cambia nel tempo registrando tutte le modifiche effettuati ad esso e aiutando a gestire la progressione concorrente di molteplici persone sullo stesso insieme di file.
+Git is the most widespread distributed Version Control System (VCS) used worldwide. Its purpose is to help maintain and manage a set of files that change over time by recording all the changes made to it and assisting in the concurrent progression of multiple people on the same set of files.
 
-Nonostante sia principalmente utilizzato in programmazione per la gestione di source code, puo venir utilizzato per la gestione di qualunque file di testo che cambia nel tempo (purtroppo e' inutile per file come Word o Excel che non sono in formato "raw text").
+While it is primarily used in programming for source code management, it can also be used for managing any text file that changes over time (unfortunately, it is useless for files like Word or Excel that are not in "raw text" format).
 
-## Teoria - Caratteristiche di una repository
+## Theory - Repository Features
 
---- immagine globale con repository, commit, branch e remote
-
-La **repository** e' il nome che viene dato ad un progetto che viene gestito tramite git.
-
-L'idea di fondo di GIT e' che ogni cambiamento di stato del codice sorgente e' rappresentabile da una lista di "differenze", in particolare linee aggiunte e linee rimosse. Se ad esempio modifichi una linea, essa contera come una rimozione e un aggiunta. Questi "pacchetti di modifiche" vengono chiamati **commit** e sono il mattone fondamentale che git utilizza per funzionare. Qualunque funzionalita di git si puo ricondurre a come creare/gestire/modificare/fondere/ispezionare commit.
-
-In maniera che quasi ricorda la piu moderna blockchain, ogni commit contiene una lista di link ai commit precedenti, se presenti, e viene rappresentato da un hash univoco.
-
---- esempio di un commit
-
-Questo permette di poter ricostruire l'albero dei commit tramite questi link, e abbiamo una sorta di certezza che i commit precedenti non possono essere modificati senza ricreare tutti i commit, permettendo anche in caso di disastri/modifiche "indietro nel tempo", di non rischiare di perdere a caso i dati.
-
-Ogni repository e' quindi rappresentabile come un albero di commit tra loro interconnessi
-
---- esempio di grafico di commit e branch
-
-Per aiutare a tenere traccia di dove si e' rimasti con i lavori, esistono le **branch**, tra cui una speciale chiamata master/main.
-
-Una branch altro non e' che un "cursore" at uno specifico commit, che puo venir spostato ad un altro commit come ad esempio un commit appena creato sopra quello attuale
-
---- grafico di movimento branch quando crei un nuovo commit
-
-Grazie a questa proprieta le branch vengono di solito utilizzate per rappresentare i "rami di lavoro", ovvero quei commit su cui si sta lavorando per fare qualcosa. Un esempio classico di configurazione di una repository e' avere una branch master con la versione "production"/finale del software, e varie branch su cui vengono lavorate le varie feature che, una volta completate, verranno immesse dentro master.
-
-Andiamo ora a nominare l'ultima caratteristica essenziale della teoria, ovvero il **merge**.
-
-Quando hai piu branch con uno stato differente, puoi ritrovarti a dover immettere le modifiche di una delle branch all'interno dell'altra. Questo processo si chiama merge e crea un commit speciale figlio delle teste di entrambe le branch, in cui le differenze tra le due branch vengono unificate, eventualmente con aiuto umano se necessario.
-
---- grafico di un merge
-
-Dopo questa infarinatura sui principi fondamentali di GIT in locale, e' ora tempo di guardare la parte "distributed" di GIT, ovvero la possibilita di sincronizzare il proprio codice con una repository remota su piattaforme come GitHub e GitLab.
-
-## Teoria - Distributed Repository
-
-Una repository GIT ha gia le sue utilita in offline per gestire e tenere traccia delle proprie modifiche al proprio codice, ma la sua forza diventa ancora piu evidente quando si lavora ad un progetto assieme multiple persone o multiple macchine.
-
-Il principio fondamentale e' che ogni repository puo avvere dei **remote** ovvero dei link speciali, come ad esempio `git@github.com:utente/repoprogetto.git`, che git puo utilizzare per leggere lo stato remoto della repository. La stragrande maggioranza delle repo ha un singolo remote chiamato **origin**.
-
-L'idea e' poter scaricare dal remote la lista delle branch remote e i commit online e poterci poi lavorare offline, che appariranno come branch speciali con nome `origin/nomebranch`.
-
---- grafico di esempio di un albero commit con repo locali e remote.
-
-Oltre al poter fetchare informazioni dai remote, si puo anche pusharle, caricando i propri commit e la posizione delle proprie branch online. Diventera (spero) tutto piu chiaro alla fine della spiegazione sui comandi.
-
-## Comandi - How to do!
-
-### Creazione Repository
-
-I primi comandi importanti sono quelli per creare una repo.
-
-I comandi tipici sono:
-
-```bash
-git init  # inizializza una repository vuota nella cartella attuale
-git clone CLONE_URL  # crea una nuova repository copiando lo stato di una repository remota
+```mermaid
+gitGraph
+    commit
+    commit
+    branch develop
+    branch feat1
+    checkout develop
+    commit
+    commit
+    checkout master
+    merge develop
+    checkout feat1
+    commit 
+    commit
+    checkout master
+    commit
+    commit type: HIGHLIGHT tag: "HEAD"
 ```
 
-Il modo piu classico di creare una repo e' generalmente creare una repo su GitHub e clonarla, in modo da avere gia tutta la logica online preconfigurata.
+The **repository** is the name given to a project that is managed using git.
 
-Se si procede a clonare una repository di qualcun'altro per cui si hanno permessi di lettura ma NON scrittura, la repository puo essere modificata in locale ma non inviare le modifiche online. Per poter creare una propria versione della repo di qualcun'altro, esiste il **fork**, che spieghero piu avanti.
+The fundamental idea of GIT is that every change in the state of the source code can be represented by a list of "differences," specifically added and removed lines. For example, if you modify a line, it will count as a removal and an addition. These "change packages" are called **commits** and are the fundamental building block that git uses to function. Any git functionality can be traced back to how to create/manage/modify/merge/inspect commits.
 
-Importante ricordare the git ha un manuale di prima categoria estremamente completo, a volte fin troppo, che si puo accedere con `git --help`. Il manuale e' disponibile per ogni sottocomando, come ad esempio `git clone --help` o `git checkout --help`.
+In a way that almost resembles the more modern blockchain, each commit contains a list of links to the previous commits, if present, and is represented by a unique hash.
 
-### Status e Informazioni
+This allows the commit tree to be reconstructed through these links, providing a kind of certainty that previous commits cannot be modified without recreating all the commits, allowing, even in the event of disasters/"back in time" modifications, not to risk randomly losing data.
 
-Il secondo set di comandi sono quelli di informazioni
+Each repository can thus be represented as a tree of interconnected commits.
+
+In the graph all the points with an hash like "0-99344e5" are commits.
+
+
+
+To help keep track of progress, there are **branches**, including a special one called master/main.
+
+A branch is nothing more than a "pointer" to a specific commit, which can be moved to another commit, such as a newly created commit on top of the current one.
+
+Thanks to this property, branches are usually used to represent "work branches," i.e., those commits being worked on to accomplish something. A classic example of a repository configuration is to have a master branch with the "production"/final version of the software, and various branches for working on different features which, once completed, will be merged into master.
+
+In the graph the branches are the horizontal lines containing commits.
+
+
+
+Now let's mention the last essential feature of the theory, namely the **merge**.
+
+When you have multiple branches with a different state, you may find yourself needing to merge changes from one branch into the other. This process is called merge and creates a special commit, a child of both branch heads, in which the differences between the two branches are unified, possibly with human help if necessary.
+
+In the graph the point where two branch unite is a **merge commit**, and even if in the graph the hash is not reported, as you will see in a real repository these is a full-fledged commit with hash and everything.
+
+
+
+After this overview of GIT fundamentals in local, it is now time to look at the "distributed" aspect of GIT, namely the possibility to synchronize your code with a remote repository on platforms like GitHub and GitLab.
+
+## Theory - Distributed Repository
+
+A GIT repository has its benefits offline for managing and keeping track of your code changes, but its strength becomes even more evident when working on a project together with multiple people or multiple machines.
+
+The fundamental principle is that each repository can have **remotes**, which are special links, such as `git@github.com:user/projectrepo.git`, which git can use to read the remote state of the repository. The vast majority of repos have a single remote called **origin**.
+
+The idea is to download the list of remote branches and online commits from the remote and work on them offline, which will appear as special branches with the name `origin/branchname`.
+
+--- example graph of a commit tree with local and remote repos.
+
+Besides fetching information from the remotes, you can also push it, uploading your commits and the position of your branches online. It will become (hopefully) clearer at the end of the explanation of the commands.
+
+## Commands - How to do!
+
+### Repository Creation
+
+The first important commands are those for creating a repo.
+
+The typical commands are:
+
+```bash
+git init  # initializes an empty repository in the current folder
+git clone CLONE_URL  # creates a new repository by copying the state of a remote repository
+```
+
+The most classic way to create a repo is generally to create a repo on GitHub and clone it, so you already have all the logic preconfigured online.
+
+If you proceed to clone someone else's repository for which you have read but NOT write permissions, the repository can be modified locally but not sent online. To create your own version of someone else's repo, there is the **fork**, which I will explain later.
+
+It's important to remember that git has an extremely comprehensive first-class manual, sometimes overly so, which can be accessed with `git --help`. The manual is available for each subcommand, such as `git clone --help` or `git checkout --help`.
+
+### Status and Information
+
+The second set of commands are for information
 
 ##### `git status`
 
-Questo comando permette di osservare lo stato attuale del commit in cui ci troviamo, chiamato nel sistema `HEAD`.
+This command allows you to observe the current state of the commit you're on, referred to in the system as `HEAD`.
 
 ```
 fpasqua@EisterBox:~/git/eisterman.github.io$ git status
@@ -103,23 +125,23 @@ Untracked files:
         _posts/GIT.md
 ```
 
-Grazie a questo comando possiamo vedere a colpo d'occhio le informazioni piu importanti sullo stato attuale della repo, in particolare:
+With this command, we can see at a glance the most important information about the current state of the repo, in particular:
 
-- `On branch`, ovvero su che branch stiamo lavorando e se sono presenti differenze tra la branch locale e quella remota
+- `On branch`, i.e., which branch we are working on and if there are differences between the local branch and the remote one
 
-- `Changes to be committed`, ovvero i file le cui modifiche sono state selezionate per l'aggiunta nel prossimo commit creato
+- `Changes to be committed`, i.e., the files which changes have been selected for inclusion in the next created commit
 
-- `Changes not staged for commit`, ovvero file che sono stati modificati ma che non verranno aggiunti al prossimo commit creato
+- `Changes not staged for commit`, i.e., files that have been modified but will not be added to the next created commit
 
-- `Untracked files`, ovvero file che non sono presenti in GIT e che quindi non vengono tracciati. Praticamente i file ignorati da GIT.
+- `Untracked files`, i.e., files that are not present in GIT and thus are not tracked. Practically the files ignored by GIT.
 
-Comondamente git status mostra anche qualche comando utile per aggiungere/togliere dai commit, cosi da non doverseli cercare ogni volta.
+Conveniently, git status also shows some useful commands for adding/removing from commits, so you don't have to search for them each time.
 
-##### `git log` e `git tree`
+##### `git log` and `git tree`
 
-Comando estremamente potente permette di vedere lista e dettagli dei commit, la posizione delle varie branch e, con le giuste opzioni il grafo dei commit.
+This extremely powerful command allows you to see list and details of commits, the position of the various branches and, with the right options, the commit graph.
 
-La versione piu semplice e' `git log` senza opzioni che mostra solo una generica lista di commit in ordine di tempo, senza mostrare i legami relativi tra i vari alberi
+The simplest version is `git log` without options that only shows a generic list of commits in chronological order, without showing the relative links between the various trees
 
 ```
 commit 39b3fea912a4ffe687b6d22199b2ada4d8b65778 (HEAD -> hotfix_release, origin/hotfix_release)
@@ -141,9 +163,9 @@ Date:   Fri Jul 5 13:33:42 2024 +0000
     MIGRATION 036 - Chargemap Business Admin
 ```
 
-Un informazione importante e' capire in che stato attualmente e' la repository. Questo viene indicato da `HEAD` che rappresenta lo stato attuale. Ogni volta che si vede in giro `HEAD` generalmente ci si riferisce al commit attualmente selezionato il cui stato e' impostato nella repo.
+An important piece of information is understanding at what state the repository is currently. This is indicated by `HEAD`, which represents the current state. Whenever you see `HEAD` around, it generally refers to the currently selected commit whose state is set in the repo.
 
-Il Git Log grezzo non e' il modo piu semplice per capire cosa sta succedendo, in particolare per la mancanza delle connessioni tra i commit, per quello esiste `git log --graph` che mostra la stessa lista di prima, ma con i collegamenti tra i commit
+The raw Git Log is not the easiest way to understand what's happening, particularly due to the lack of connections between commits, which is why `git log --graph` exists, showing the same list as before but with the connections between commits
 
 ```
 * commit 6bc42a94599cd5be1f3e12c9865297a10c94ebd0
@@ -167,13 +189,13 @@ Il Git Log grezzo non e' il modo piu semplice per capire cosa sta succedendo, in
 | |
 ```
 
-Rimane comunque molto clutterato da informazioni non necessarie nel 90% dei casi, quindi ecco un comando che mostra un albero semplice e immediato da comprendere:
+It's still quite cluttered with unnecessary information in 90% of cases, so here's a command that shows a simple and immediately understandable tree:
 
 ```bash
 git log --graph --full-history --all --color --pretty=format:"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s"
 ```
 
-Questa variante di log permette di avere un albero compatto con solo branch, Commit Hash e Commit message:
+This log variant allows having a compact tree with only branches, Commit Hash, and Commit messages:
 
 ```
 * 39b3fea        (HEAD -> hotfix_release, origin/hotfix_release) re.parkadmin.charge: Add sum endpoint to obtain the precalculated sum of the charge requested by filter.
@@ -183,26 +205,26 @@ Questa variante di log permette di avere un albero compatto con solo branch, Com
 |\
 | * f99a3da      (origin/chargemap_integr) re.parkadmin.cmb: Add export endpoint proxy
 | * 997867e      re.parkadmin: Add ChargeMap Business Admin integration model fields
-* | fbd610a      re.charge: Add Grace Period during the reboot time of the Pilotage, to not close charges for RP that take too much time to be back online.
+* | fbd610a      re.charge: Add Grace Period during the reboot time of the Pilotage, to not close charges for RP that take too much time to get back online.
 |/
 | * 81d8f6e      (origin/fix_csauth_v1public) re.public.auth: Add qrcode_allowed to FeaturedUser to replace the old legacy retrieve_user_charge_permissions
 |/
-* 776f16c        re.reports.yearly: Send Yearly Report only for park with at least one CS with QRCode
+* 776f16c        re.reports.yearly: Send Yearly Report only for the park with at least one CS with QRCode
 ```
 
-Per evitare di doverlo scrivere ogni volta una buona idea e' crearsi un alias bash oppure impostarlo come git alias globale. Io preferisco la seconda opzione.
+To avoid having to type it every time, a good idea is to create a bash alias or set it as a global git alias. I prefer the second option.
 
-Runnando il comando
+By running the command
 
 ```
 git config --global alias.tree "log --graph --full-history --all --color --pretty=format:\"%x1b[31m%h%x09%x1b[32m%d%x1b[0m%x20%s\""
 ```
 
-Viene inserito nel proprio `~/.gitconfig` file la configurazione che consente di richiamare questo lungo comando semplicemente con `git tree`. Uno strumento veramente potente per il lavoro quotidiano.
+The configuration is inserted into your `~/.gitconfig` file that allows recalling this long command simply with `git tree`. A really powerful tool for daily work.
 
 ##### `git show`
 
-Questo comando permette di vedere il contenuto di un commit, ovvero tutti i suoi metadata e infine il `diff` ovvero la lista di aggiunte e rimozioni che il commit contiene. Il nome viene dall'utility utilizzata per generare questi file ed il relativo formato, ovvero `diff`!
+This command allows viewing the content of a commit, i.e., all its metadata and finally the `diff`, which is the list of additions and removals that the commit contains. The name comes from the utility used to generate these files and the related format, i.e., `diff`!
 
 ```
 roberto@production-api-charge-re:~/backend_rossinienergy$ git show f99a3da
@@ -228,25 +250,25 @@ index 0000000..672bc61
 +from re_restapi.libs.permissionviewset import *
 ```
 
-Tra le informazioni nel metadata abbiamo autore, data e commit message. Da `diff` in poi, c'e la rappresentazione in diff format delle modifiche contenute nel commit.
+Among the information in the metadata, we have the author, date, and commit message. From `diff` onwards, there's the representation in diff format of the changes contained in the commit.
 
-### Creazione Commit
+### Commit Creation
 
-La creazione di commit e' il cardine del lavoro quotidiano su git.
+Creating commits is the crux of daily work in git.
 
-Il processo logico dietro e' dividere il lavoro in step:
+The logical process behind it is to break the work into steps:
 
-1. Ti assicuri di essere sulla branch corretta su cui devi lavorare, ad esempio `master`.
+1. Make sure you are on the correct branch where you need to work, for example, `master`.
 
-2. Fai le tue modifiche, test, etc...
+2. Make your changes, test, etc.
 
-3. You stage the modification for the future commit, ovvero selezioni quelle di cui hai bisogno di inserire nel nuovo commit
+3. Stage the modification for the future commit, i.e., select those you need to include in the new commit
 
-4. Crei il commit aggiungendo un commit message che descriva BENE le modifiche che hai appena fatto. Ricorda sempre che mentre puo venir voglia di fare commit message come "bugfix", nel momento in cui hai un disastro e devi tornare indietro sui tuoi passi, messaggi poco chiari come questo ti obbligano a leggere _commit per commit_ le modifiche facendoti perdere millenni di tempo!
+4. Create the commit by adding a commit message that WELL describes the changes you just made. Always remember that while you may want to make commit messages like "bugfix," when you have a disaster and need to go back on your steps, unclear messages like this force you to read _commit by commit_ the changes, losing millennia of time!
 
-Facciamo ora un esempio di creazione commit.
+Now let's do an example of creating a commit.
 
-Immaginiamo di avere una repo in cui siamo su master e dobbiamo modificare due file, `A.py` e `B.py`. Se volete provare potete andare in una cartella vuota e scrivere questo sul terminale per inizializzare la branch al mio stesso initial state:
+Imagine having a repo where we are on master and need to modify two files, `A.py` and `B.py`. If you want to try, you can go to an empty folder and type this in the terminal to initialize the branch to my same initial state:
 
 ```bash
 git init
@@ -255,11 +277,11 @@ git add A.py B.py
 git commit -m "Initial Commit"
 ```
 
-Continuando col tutorial capirete cosa viene fatto in questo snippet.
+Continuing with the tutorial, you'll understand what is being done in this snippet.
 
-Dopo esserci assicurati con `git status` che siamo nel posto giusto, facciamo le nostre modifiche.
+After making sure with `git status` that we are in the right place, we make our changes.
 
-`git status` a questo punto ci mostrera una cosa del genere:
+`git status` at this point will show us something like this:
 
 ```
 fpasqua@EisterBox:~/git/test$ git status
@@ -273,19 +295,19 @@ Changes not staged for commit:
 no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
-A questo punto cominciamo a poter fare due cose: `git add` e `git restore`.
+At this point, we start to be able to do two things: `git add` and `git restore`.
 
 ##### `git restore`
 
-Questo comando permette di cancellare le modifiche effettuate e non committate su un file trackato da git. Se ad esempio facessi `git restore B.py` tutte le modifiche che ho fatto su `B.py` che lo rendono diverso dallo stato attuale della repository, verrebbero cancellate.
+This command allows discarding changes made and not committed to a git-tracked file. For example, if I did `git restore B.py`, all the changes I made to `B.py` that make it different from the current state of the repository would be discarded.
 
-Puo risultare comodo in certe situazioni.
+It can be convenient in certain situations.
 
 ##### `git add`
 
-Questo comando essenziale permette di flaggare un file modificato per il commit, ovvero renderlo **staged**.
+This essential command allows an altered file to be flagged for commit, i.e., make it **staged**.
 
-Se facciamo dunque `git add A.py` il successivo `git state` ci dara:
+If we do `git add A.py`, the subsequent `git state` will give us:
 
 ```
 fpasqua@EisterBox:~/git/test$ git add A.py
@@ -301,27 +323,27 @@ Changes not staged for commit:
         modified:   B.py
 ```
 
-Qui vediamo come `A.py` sia incluso nel prossimo commit mentre B.py no.
+Here we see how `A.py` is included in the next commit while B.py is not.
 
-Notiamo anche che `git status` ci ha suggerito un nuovo comando per fare l'unstage.
+We also notice that `git status` suggested a new command to unstage.
 
 ##### `git restore --staged`
 
-Questa variante di `git restore` permette di rimuovere un file da un commit senza pero cancellarne le modifiche. Praticamente e' l'inversa esatta di `git add`. Questo comando non provoca alcuna perdita di dati quindi puo essere usato con tranquillita, prestando attenzione che ci sia l'opzione `--staged` quando si usa, altrimenti si perderanno le modifiche nel file!
+This variant of `git restore` allows removing a file from a commit without removing its changes. Practically, it's the exact inverse of `git add`. This command doesn't result in any data loss, so it can be used with confidence, paying attention that there is the `--staged` option when used, otherwise, modifications within the file will be lost!
 
-Continuando con il nostro esempio, possiamo ora creare un commit.
+Continuing with our example, we can now create a commit.
 
 ##### `git commit`
 
-La creazione di un commit viene eseguita facendo direttamente `git commit`, che aprira una finestra in un editor di testoin cui inserire il commit message.
+Creating a commit is done by simply executing `git commit`, which will open a window in a text editor where you can enter the commit message.
 
-Una volta salvato il file temporale, git creera il commit.
+Once you save the temporary file, git will create the commit.
 
-Una variante a questa procedura molto comoda se il commit message non e' cosi lungo da richiedere un editor di testo, e' `git commit -m "testo del commit message"` che permette di dare il commit message direttamente da linea di comando.
+A variant to this procedure, which is very handy if the commit message isn't so long as to require a text editor, is `git commit -m "commit message text"`, which allows you to provide the commit message directly via command line.
 
 ```
-fpasqua@EisterBox:~/git/test$ git commit -m "Modifico A.py aggiugendo feature X"
-[master 31ebe42] Modifico A.py aggiugendo feature X
+fpasqua@EisterBox:~/git/test$ git commit -m "Modify A.py adding feature X"
+[master 31ebe42] Modify A.py adding feature X
  1 file changed, 1 insertion(+)
 fpasqua@EisterBox:~/git/test$ git status
 On branch master
@@ -333,128 +355,128 @@ Changes not staged for commit:
 no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
-E facendo `git tree` possiamo notare il nuovo commit sulla branch master:
+And by doing `git tree`, we can notice the new commit on the master branch:
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
-* 31ebe42        (HEAD -> master) Modifico A.py aggiugendo feature X
+* 31ebe42        (HEAD -> master) Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-Queste sono le info basilari per creare un commit su una branch selezionata.
+These are the fundamental infos to create a commit on a selected branch.
 
-Pero se potessimo solo creare commit, diventerebbe difficile gestire il lavoro di piu persone, e GIT e' nato esattamente per gestire quello.
+But if we could only create commits, it would become difficult to manage the work of multiple people, and GIT is designed precisely to handle that.
 
-Andiamo ora piu a fondo sulle branch ed i loro superpoteri.
+Let's dive deeper into branches and their superpowers.
 
 ### Branch
 
-Come abbiam detto in precedenza una branch si puo immaginare come un "cursore" che punta ad un commit e va ad indicare dove ci troviamo a lavorare.
+As we mentioned earlier, a branch can be imagined as a "pointer" pointing to a commit and indicating where we are working.
 
-Esistono innumerevoli approcchi alla gestione delle branch ma il piu semplice da capire, che non e' per forza il migliore specialmente per progetti con piu persone, e' chiamato [Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow), dove si ha la master branch tenere traccia della versione finale del software, e esistono branch separate per ogni feature, che poi vengono fuse dentro master quando la feature e' pronta:
+There are countless approaches to managing branches, but the simplest to understand, which isn't necessarily the best, especially for projects with more people, is called [Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow), where the master branch keeps track of the final version of the software, and there are separate branches for each feature, which are then merged into master when the feature is ready:
 
---- grafico di feature branch con master + 1 branch gia mergiata e 1 da mergiare
+--- feature branch graph with master + 1 merged branch and 1 to be merged
 
-Le operazioni fondamentali che si possono fare sulle branch sono:
+The fundamental operations that can be performed on branches are:
 
-1. Checkout: selezionare una branch come quella in uso. Il contenuto della repository verra messo nello stato attuale della branch.
+1. **Checkout**: select a branch as the one in use. The repository's content will be put in the current state of the branch.
 
-2. Creazione: creare una nuova branch che punti ad un commit gia esistente.
+2. **Creation**: create a new branch pointing to an already existing commit.
 
-3. Merge: immettere i commit della branch B all'interno di A, fondendo i due percorsi e creando un "merge commit" speciale in A.
+3. **Merge**: insert the commits of branch B into A, merging the two paths and creating a special "merge commit" in A.
 
-4. Reset: resettare lo stato di una branch ad un commit precedente.
+4. **Reset**: reset the state of a branch to a previous commit.
 
-5. Rebase: L'Arte Segreta di riscrivere la Storia. Operazione estremamente potente che permette di riscrivere l'intera struttura di una branch.
+5. **Rebase**: The Secret Art of rewriting History. An extremely powerful operation that allows rewriting an entire branch's structure.
 
 ##### `git checkout`
 
-Probabilmente l'operazione piu importante di tutto GIT. Questo comando permette di selezionare lo stato attuale della repository. 
+Probably the most important operation in all of GIT. This command allows selecting the current state of the repository.
 
-La sintassi e' `git checkout <commit|branch>` ovvero si puo addirittura selezionare un singolo commit per riportare la repo a quello stato. Questo stato speciale in cui si checkout un commit e non una branch viene detto *Detached Head*, perche HEAD lo stato attuale della repo non e' direttamente collegato ad una branch, ed ogni nuovo commit rischia di perdersi nei meandri del grafo di Git. Questo perche Git considera "utili" solo i commit collegati alla storia di una branch.
+The syntax is `git checkout <commit|branch>`, meaning you can even select a single commit to revert the repo to that state. This special state where you checkout a commit rather than a branch is called *Detached Head*, because HEAD, the current state of the repo, is not directly linked to a branch, and any new commit risks getting lost in the labyrinths of Git's graph. This is because Git considers "useful" only the commits connected to the history of a branch.
 
-Checkout su branch e' un operazione comune, permette di mettere la repo nello stato associato a quella branch ed eventualmente di fare e committare modifiche su di essa.
+Checking out on a branch is a common operation, allowing putting the repo in the state associated with that branch and possibly making and committing changes on it.
 
-Ricordate in `git status` dove dice `On branch master` ? Quella e' la branch attualmente in checkout, e dove verranno eseguiti i nuovi commit.
+Remember in `git status` where it says `On branch master`? That's the currently checked-out branch, and where new commits will be made.
 
---- immagine checkout branch con HEAD che si sposta da master a branch feature1
+--- image branch checkout with HEAD moving from master to feature1 branch
 
 ##### `git checkout -b`
 
-Checkout e' lo stesso comando che si usa per CREARE una nuova branch.
+Checkout is the same command used to CREATE a new branch.
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
-* 31ebe42        (HEAD -> master) Modifico A.py aggiugendo feature X
+* 31ebe42        (HEAD -> master) Modify A.py adding feature X
 * bd883a1        Initial Commit
 fpasqua@EisterBox:~/git/test$ git checkout -b feature1
 Switched to a new branch 'feature1'
 fpasqua@EisterBox:~/git/test$ git tree
-* 31ebe42        (HEAD -> feature1, master) Modifico A.py aggiugendo feature X
+* 31ebe42        (HEAD -> feature1, master) Modify A.py adding feature X
 * bd883a1        Initial Commit
 fpasqua@EisterBox:~/git/test$
 ```
 
-Come possiamo notare da `git tree`, adesso HEAD punta alla nuova branch feature1 e non a master! Vuol dire che se adesso noi creassimo un nuovo commit modificando un file `B.py` e committandolo, il nuovo commit sarebbe associato a feature1!
+As we can see from `git tree`, HEAD now points to the new feature1 branch instead of master! This means that if we now create a new commit by modifying a file `B.py` and committing, the new commit would be associated with feature1!
 
 ```
 fpasqua@EisterBox:~/git/test$ git add B.py
-fpasqua@EisterBox:~/git/test$ git commit -m "Modifico B.py per feature 1"
-[feature1 86b5f83] Modifico B.py per feature 1
+fpasqua@EisterBox:~/git/test$ git commit -m "Modify B.py for feature 1"
+[feature1 86b5f83] Modify B.py for feature 1
  1 file changed, 1 insertion(+), 1 deletion(-)
 fpasqua@EisterBox:~/git/test$ git tree
-* 86b5f83        (HEAD -> feature1) Modifico B.py per feature 1
-* 31ebe42        (master) Modifico A.py aggiugendo feature X
+* 86b5f83        (HEAD -> feature1) Modify B.py for feature 1
+* 31ebe42        (master) Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-In questo modo si puo lavorare su piu percorsi senza mischiare i cambiamenti delle varie feature, in modo da poter capire facilmente se si rompe qualcosa, COSA e PERCHE si e' rotto.
+In this way, you can work on multiple paths without mixing the changes of the various features, enabling easy troubleshooting of what's broken and WHY it broke.
 
-Ipotizziamo ora che in master ci siano altri commit:
+Let's now assume that there are more commits in master:
 
 ```
 fpasqua@EisterBox:~/git/test$ git checkout master
 Switched to branch 'master'
-fpasqua@EisterBox:~/git/test$ touch nuovofile
-fpasqua@EisterBox:~/git/test$ git add nuovofile
-fpasqua@EisterBox:~/git/test$ git commit -m "Aggiungi Nuovo File!"
-[master 4c0a83f] Aggiungi Nuovo File!
+fpasqua@EisterBox:~/git/test$ touch newfile
+fpasqua@EisterBox:~/git/test$ git add newfile
+fpasqua@EisterBox:~/git/test$ git commit -m "Add New File!"
+[master 4c0a83f] Add New File!
  1 file changed, 0 insertions(+), 0 deletions(-)
- create mode 100644 nuovofile
+ create mode 100644 newfile
 fpasqua@EisterBox:~/git/test$ git tree
-* 4c0a83f        (HEAD -> master) Aggiungi Nuovo File!
-| * 86b5f83      (feature1) Modifico B.py per feature 1
+* 4c0a83f        (HEAD -> master) Add New File!
+| * 86b5f83      (feature1) Modify B.py for feature 1
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-Ora immaginiamo che feature1 sia completa e debba venir reimmessa in master. Questa operazione si chiama merge.
+Now, let's imagine that feature1 is complete and should be reintroduced into the master. This operation is called merge.
 
 ##### `git merge`
 
-Il merge funziona secondo una logica preimpostata, che puo anche venir cambiata da argomento, ma che generalmente funziona cosi:
+The merge works according to a predefined logic, which can also be changed with arguments, but it generally works like this:
 
-1. `git checkout branch-che-riceve` per andare nella branch in cui devo immettere `feature-branch`
+1. `git checkout branch-that-receives` to go into the branch where I need to introduce `feature-branch`
 
-2. `git merge feature-branch` per avviare il merge. Si aprira un editor di testo per modificare il messaggio di commit di default (che generalmente va bene)
+2. `git merge feature-branch` to initiate the merge. A text editor will open to modify the default commit message (which generally is fine)
 
-3. Se il merge puo venir fatto tramite *fast-forwarding*, ovvero senza creare un merge commit, viene fatto in questo modo
+3. If the merge can be done by *fast-forwarding*, i.e., without creating a merge commit, it is done this way
 
-4. Se il FF non e' possibile, viene creato un merge commit all'interno di `branch-che-riceve` con tutte le modficihe di `feature-branch`
+4. If FF is not possible, a merge commit is created in `branch-that-receives` with all the modifications of `feature-branch`
 
-5. Se ci sono dei conflitti, come ad esempio porzioni di file modificati da entrambe le branch, si attiva la modalita **merge conflict** che richiede all'operatore di risolverli a mano.
+5. If there are conflicts, such as portions of files modified by both branches, **merge conflict** mode activates, requiring human intervention.
 
---- immagini di merge e fast-forwarding
+--- merge and fast-forwarding images
 
-Ecco un esempio nel caso in cui non ci siano conflitti ma non si possa eseguire fast-forwarding:
+Here's an example where there are no conflicts, but fast-forwarding can't be done:
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
-* 4c0a83f        (HEAD -> master) Aggiungi Nuovo File!
-| * 86b5f83      (feature1) Modifico B.py per feature 1
+* 4c0a83f        (HEAD -> master) Add New File!
+| * 86b5f83      (feature1) Modify B.py for feature 1
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 fpasqua@EisterBox:~/git/test$ git merge feature1
 Merge made by the 'ort' strategy.
@@ -463,26 +485,26 @@ Merge made by the 'ort' strategy.
 fpasqua@EisterBox:~/git/test$ git tree
 *   13b099b      (HEAD -> master) Merge branch 'feature1'
 |\
-| * 86b5f83      (feature1) Modifico B.py per feature 1
-* | 4c0a83f      Aggiungi Nuovo File!
+| * 86b5f83      (feature1) Modify B.py for feature 1
+* | 4c0a83f      Add New File!
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-Come si puo notare, la branch `feature1` non viene minimamente toccata.
+As we can see, the feature1 branch remains completely untouched.
 
-Se invece il Fast Forward e' possibile come nel caso di `feature2` e `master`, se non diversamente specificato nelle opzioni del merge nessun merge commit viene creato, ma la branch target viene fast-forwardata in avanti:
+If instead Fast Forward is possible as in the case of `feature2` and `master`, unless specified otherwise in the merge options, no merge commit is created, but the target branch is fast-forwarded ahead:
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
-* baca0a1        (feature2) Aggiungo C.py per feature 2
+* baca0a1        (feature2) Add C.py for feature 2
 *   13b099b      (HEAD -> master) Merge branch 'feature1'
 |\
-| * 86b5f83      (feature1) Modifico B.py per feature 1
-* | 4c0a83f      Aggiungi Nuovo File!
+| * 86b5f83      (feature1) Modify B.py for feature 1
+* | 4c0a83f      Add New File!
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 fpasqua@EisterBox:~/git/test$ git merge feature2
 Updating 13b099b..baca0a1
@@ -491,27 +513,27 @@ Fast-forward
  1 file changed, 2 insertions(+)
  create mode 100644 C.py
 fpasqua@EisterBox:~/git/test$ git tree
-* baca0a1        (HEAD -> master, feature2) Aggiungo C.py per feature 2
+* baca0a1        (HEAD -> master, feature2) Add C.py for feature 2
 *   13b099b      Merge branch 'feature1'
 |\
-| * 86b5f83      (feature1) Modifico B.py per feature 1
-* | 4c0a83f      Aggiungi Nuovo File!
+| * 86b5f83      (feature1) Modify B.py for feature 1
+* | 4c0a83f      Add New File!
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-Questo comando e' estremamente potente e generalmente e' la base dei git flow piu semplici in uso.
+This command is extremely powerful and generally is the basis of simpler git flows in use.
 
-Merge e' un comando estremamente vasto con decine di opzioni.
+Merge is an extremely vast command with dozens of options.
 
 ##### Git Merge Conflict
 
-Se durante un merge di due branch divergenti, su cui non e' possibile agire via fast-forward, dei file sono stati modificati in entrambe le branch git non puo decidere autonomamente quale sia la versione corretta del file. Magari l'utente deve unire insieme alcune modifiche della branch 1 e della branch 2. In questo caso il merge viene bloccato e la repository viene posta in stato di **Merge Conflict**, estremamente temuta dai principianti.
+If during a merge of two divergent branches, where fast-forward is not possible, files are modified in both branches, git cannot autonomously decide which version of the file is correct. Maybe the user needs to combine some modifications from branch 1 and branch 2. In this case, the merge is blocked, and the repository is put in **Merge Conflict** state, extremely feared by beginners.
 
-Se lo stesso file e' modificato in parti diverse dalle due branch la strategia di default di Git e' in grado comunque di fare il merge, ma nel caso venga rilevata una modifica da parte di entrambe le branch ad una stessa porzione di un file, viene triggerato il conflitto.
+If the same file is modified in different parts by the two branches, git's default strategy is still able to merge, but if a modification is detected by both branches to the same portion of a file, a conflict is triggered.
 
-Creiamo ora un esempio dedicato. Immaginiamo di avere questo file chiamato `D.py` nella nostra branch:
+Let's create a dedicated example. Imagine having this file called `D.py` in our branch:
 
 ```python
 print("Numbers:")
@@ -523,12 +545,11 @@ b = 1
 for x in range(5):
     a,b = b,a+b
     print(b)
-
 ```
 
-Immaginiamo che in due branch diverse vengono fatte modifiche a righe diverse di questo stesso file.
+Imagine that in two different branches, modifications are made to different lines of this same file.
 
-Avremo questo tree:
+We will have this tree:
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
@@ -539,9 +560,9 @@ fpasqua@EisterBox:~/git/test$ git tree
 [...]
 ```
 
-Dove possiamo notare due branch `master` e `d_modify` con due commit. Questi commit agiscono su porzioni diverse dello stesso file come possiamo vedere facendo `git show` dei commit in cima alle branch.
+We can see two branches, `master` and `d_modify`, with two commits. These commits act on different portions of the same file, as we can observe by doing `git show` of the commits at the top of the branches.
 
-Ricorda che in questo caso fare `git show <branch>` e' equivalente a fare `git show <commit_hash>` con il commit a cui l'etichetta branch punta.
+Remember that in this case, doing `git show <branch>` is equivalent to doing `git show <commit_hash>` with the commit that the branch label points to.
 
 ```diff
 fpasqua@EisterBox:~/git/test$ git show master
@@ -596,11 +617,9 @@ index 8868120..75d2edb 100644
 -    print(b)
 +    print(b, end=', ')
 +print()
-
-
 ```
 
-Come possiamo notare entrambi modificano nelle prime righe le stesse porzioni del file `D.py`. Cosa succede quindi se proviamo a fare il merge di d_modify in master?
+As we can see, both modify, in the first few lines, the same portions of the file `D.py`. What happens if we try to merge d_modify into master?
 
 ```
 fpasqua@EisterBox:~/git/test$ git merge d_modify
@@ -620,11 +639,7 @@ Unmerged paths:
 no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
-Come possiamo notare la repository e' ora in stato di merge conflict.
-
-Il `git status` ci mostra che c'e un path/file che va risolto manualmente, ovvero D.py.
-
-Aprendo D.py vedremo questo:
+Now we open D.py and we'll see this:
 
 ```python
 print("Numbers:")
@@ -646,13 +661,13 @@ for x in range(5):
 print()
 ```
 
-Le modifiche che potevano essere auto-mergiate sono state fuse, ma quelle in conflitto no.
+The changes that could be auto-merged have been merged, but those in conflict haven't.
 
-Per poter risolvere il conflitto bisogna sostituire la parte racchiusa tra le righe con `<<<<<<` e `>>>>>>>` con il codice che vogliamo sia presente alla fine del merge.
+To resolve the conflict, you need to replace the part enclosed between the `<<<<<<` and `>>>>>>>` lines with the code you want to be present after the merge.
 
-Si puo notare come ci vengano date le versioni del codice nelle 2 branch partecipanti al merge, dove con HEAD ci si riferisce alla branch al momento in checkout, quindi abbiamo nella prima parte il codice che proviene da `master` e nella seconda quello da `d_modify`.
+You can see how we are given the code versions in the 2 branches participating in the merge, with HEAD referring to the currently checked-out branch, so we have in the first part the code originating from `master`, and in the second one from `d_modify`.
 
-Questa operazione va fatta manualmente in base a cosa gli sviluppatori si aspettano, e in questo caso quello che io volevo era:
+This operation must be performed manually based on what the developers expect, and in this case, what I wanted was:
 
 ```python
 print("Numbers:")
@@ -668,9 +683,9 @@ for x in range(5):
     print(b, en
 ```
 
-e scriverlo all'interno del file.
+and write it into the file.
 
-Ora che il conflitto e' stato risolto bisogna markarlo come tale e continuare il processo di merge:
+Now that the conflict is resolved, it needs to be marked as such and continue the merge process:
 
 ```
 fpasqua@EisterBox:~/git/test$ git add D.py
@@ -694,13 +709,13 @@ fpasqua@EisterBox:~/git/test$ git tree
 [...]
 ```
 
-Ed ecco risolto il merge conflict.
+And the merge conflict is resolved.
 
 ##### `git reset`
 
-A volte puo capitare che convenga cambiare lo stato di una branch all'indietro per risolvere un problema. Git Reset consente di resettare lo stato della branch attualmente selezionata (HEAD) ad uno stato precedente.
+Sometimes it might happen that it's better to change the branch state backward to solve a problem. Git Reset allows reseting the currently selected branch's (HEAD) state to a previous state.
 
-Esistono 4 tipi di Reset:
+There are 4 types of Reset:
 
 1. **--soft** :
    
@@ -735,9 +750,9 @@ Esistono 4 tipi di Reset:
    - Keeps changes in the working directory if they do not conflict with the reset.
    - Use case: Update the HEAD while retaining work in progress that does not conflict.
 
-Ogni reset mode ha uno specifico use case. Personalmente mi e' raramente capitato di dover usare reset diversi da `reset --hard` ma questo e' probabilmente skill-issue da parte mia nel non essermi mai focalizzato troppo sul capire quando usare ogni tipo di git reset.
+Each reset mode has a specific use case. Personally, I've rarely had to use resets other than `reset --hard`, but this is probably a skill-issue on my part for not focusing enough on understanding when to use each type of git reset.
 
-Ad esempio, immaginiamo di voler resettare lo stato della nostra repository a prima del merge.
+For example, let's imagine we want to reset our repository's state before the merge.
 
 ```
 fpasqua@EisterBox:~/git/test$ git tree
@@ -747,7 +762,7 @@ fpasqua@EisterBox:~/git/test$ git tree
 * | bd642ef      D.py: Print numbers on a line
 |/
 * f6f37ea        First D.py version
-* baca0a1        Aggiungo C.py per feature 2
+* baca0a1        Add C.py for feature 2
 [...]
 fpasqua@EisterBox:~/git/test$ git reset --hard bd642ef
 HEAD is now at bd642ef D.py: Print numbers on a line
@@ -756,17 +771,17 @@ fpasqua@EisterBox:~/git/test$ git tree
 | * bd642ef      (HEAD -> master) D.py: Print numbers on a line
 |/
 * f6f37ea        First D.py version
-* baca0a1        Aggiungo C.py per feature 2
+* baca0a1        Add C.py for feature 2
 [...]
 ```
 
-In questo modo abbiamo rollbackato il merge, rimuovendone il commit.
+In this way, we have rolled back the merge, removing its commit.
 
 ##### Recovering from a git reset
 
-Reset e' un operazione estremamente distruttiva se fatta nel modo sbagliato, nonostante questo esiste un modo per recuperare i commit perduti da un reset.
+Reset is an extremely destructive operation if done the wrong way, however, there is a way to recover lost commits from a reset.
 
-Se ci si ricorda il commit hash di prima del reset, o tramite il comando che lista in maniera indiscriminata tutti i movimenti dei commit nella repo, anche quelli orfani (`git reflog`), e' possibile recuperare lo stato precedente grazie ad un altro reset:
+If you remember the commit hash from before the reset, or through the command that indiscriminately lists all the commit movements in the repo, even the orphaned ones (`git reflog`), it's possible to recover the previous state thanks to another reset:
 
 ```
 fpasqua@EisterBox:~/git/test$ git reflog
@@ -782,7 +797,7 @@ a32e387 HEAD@{8}: merge d_modify: Merge made by the 'ort' strategy.
 bd642ef (HEAD -> master) HEAD@{9}: commit: D.py: Print numbers on a line
 ```
 
-Possiamo vedere che l'ultimo commit cu cui e' stata registrata un operazione prima di quello di reset era il `4c13b7a`, quindi possiamo ispezionare questo commit orfano per vedere se e' quello a cui vogliamo ritornare
+We can see that the last commit where an operation was registered before the reset was `4c13b7a`. So we can inspect this orphaned commit to see if it’s where we want to return
 
 ```diff
 fpasqua@EisterBox:~/git/test$ git show 4c13b7a
@@ -797,7 +812,7 @@ diff --cc D.py
 index 581d593,75d2edb..ea40bd3
 --- a/D.py
 +++ b/D.py
-@@@ -1,11 -1,12 +1,13 @@@
+@@ -1,11 -1,12 +1,13 @@@
   print("Numbers:")
 - for i in range(10):
 -     print(i, end=', ')
@@ -817,7 +832,7 @@ index 581d593,75d2edb..ea40bd3
 + print()
 ```
 
-E sembrerebbe proprio il commit da cui siamo partiti col reset! Facendo quindi:
+And it looks like the commit from which we started with reset! Therefore, by doing:
 
 ```
 fpasqua@EisterBox:~/git/test$ git reset --hard 4c13b7a
@@ -829,22 +844,34 @@ fpasqua@EisterBox:~/git/test$ git tree
 * | bd642ef      D.py: Print numbers on a line
 |/
 * f6f37ea        First D.py version
-* baca0a1        Aggiungo C.py per feature 2
+* baca0a1        Add C.py for feature 2
 *   13b099b      Merge branch 'feature1'
 |\
-| * 86b5f83      Modifico B.py per feature 1
-* | 4c0a83f      Aggiungi Nuovo File!
+| * 86b5f83      Modify B.py for feature 1
+* | 4c0a83f      Add New File!
 |/
-* 31ebe42        Modifico A.py aggiugendo feature X
+* 31ebe42        Modify A.py adding feature X
 * bd883a1        Initial Commit
 ```
 
-Abbiamo effettivamente recuperato i commit persi con il reset.
+We have successfully recovered the commits lost with the reset.
 
-Questa operazione si affida al fatto che Git cancella internamente i commit orfani non immediatamente ma una volta ogni tanto (garbage collection), quindi per un po' di tempo si puo' recuperare il danno fatto da un reset sbagliato.
+This operation relies on the fact that Git doesn’t delete orphaned commits internally immediately, but once every so often (garbage collection); thus, one can recover the damage done by a wrong reset for a while.
 
-Questo e' possibile solo con i dati dei commit e non con dati in staging area o in working directory persi da un reset.
+This is only possible with the commit data, not with data in the staging area or working directory lost from a reset.
 
 ##### `git rebase`
 
-Il Rebase e' al contempo un operazione semplice ma estremamente potente, il cui use case e' effettivamente "riscrivere la storia", ovvero modificare/ricreare un intera catena di commit cambiandone certi pezzi come unire insieme piu commit.
+Rebase is, at the same time, a simple yet extremely powerful operation, with the use case effectively being to "rewrite history," i.e., modify/recreate an entire chain of commits by changing certain pieces, like merging multiple commits together.
+
+For now, I’ll omit it from the guide, but hopefully, I can write a more detailed article about it in the future.
+
+### Remote interaction
+
+<work in progress>
+
+## Conclusions
+
+Git is an extremely powerful tool with many things to learn and a learning curve that can seem quite steep, but it offers many advantages.
+
+I hope that this collection of information and tips can be useful for someone!
